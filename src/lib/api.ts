@@ -28,23 +28,29 @@ export const transcribeAudio = async (audioBlob: Blob): Promise<string> => {
   // Simulate network delay for a more realistic API call experience
   await new Promise((resolve) => setTimeout(resolve, 2000));
   
-  // This is where you would normally send the audio to a speech-to-text API
-  // For now, we'll return a placeholder response
+  // Get audio duration in seconds (estimate - in a real app, we would get this from the audio file)
+  const audioDuration = Math.floor(audioBlob.size / 5000); // Rough estimate based on blob size
   
-  // Get audio duration in seconds (roughly)
-  const audioDuration = 120; // Just a placeholder value
+  // Create a more realistic sample transcript
+  return `Meeting Kickoff - Project Alpha
   
-  return `This is a simulated transcript from the audio recording service.
-  
-In a real implementation, this would be actual transcribed text from your audio file.
-The audio recording was approximately ${audioDuration} seconds long.
+John: Good morning everyone, thanks for joining today's meeting about the Q3 marketing strategy.
 
-Some meeting services that could be integrated here include:
-- Google Speech-to-Text API
-- Microsoft Azure Speech Service
-- Amazon Transcribe
-- AssemblyAI
-- Deepgram
+Sarah: Thanks John. I've prepared the analytics from our last campaign that I'd like to share.
 
-The transcription would capture all speakers and convert the audio to text automatically.`;
+John: Great. Before we dive into the data, I wanted to remind everyone about our goals for this quarter.
+
+Michael: Speaking of goals, are we still focusing on expanding our social media presence?
+
+Sarah: Yes, the data shows our engagement has increased by 24% on Instagram and LinkedIn.
+
+John: That's impressive. I think we should allocate more resources to those channels.
+
+Michael: Agreed. We should also consider bringing on that influencer partnership we discussed last month.
+
+John: Good point. Sarah, can you put together a proposal for that by next Friday?
+
+Sarah: Yes, I'll have that ready by then.
+
+John: Perfect. Let's move on to the budget discussion...`;
 };

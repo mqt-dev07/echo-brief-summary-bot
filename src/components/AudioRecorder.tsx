@@ -1,8 +1,9 @@
 
 import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, AudioWaveform } from "lucide-react";
+import { Mic, MicOff, AudioWaveform, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { transcribeAudio } from "@/lib/api";
 
 interface AudioRecorderProps {
   onAudioCaptured: (text: string) => void;
@@ -12,6 +13,7 @@ interface AudioRecorderProps {
 const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoading }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -31,9 +33,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
         }
       };
       
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        processAudio(audioBlob);
+        await processAudio(audioBlob);
         
         // Stop all tracks to release the microphone
         stream.getTracks().forEach(track => track.stop());
@@ -80,21 +82,30 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
     }
   };
 
-  const processAudio = (audioBlob: Blob) => {
-    // For simplicity in this implementation, we'll use a placeholder approach
-    // that converts the audio to a dummy transcript
-    // In a real app, you would send this to a speech-to-text service
-    
-    // Create a dummy transcript based on recording length
-    const dummyText = `This is a simulated transcript of a ${recordingDuration} second recording. 
-    In a real implementation, this audio would be sent to a speech-to-text service
-    like Google Speech-to-Text, Azure Speech, or similar.
-    
-    The audio would be transcribed and returned as text, which would then be passed
-    to the summary generator.`;
-    
-    // Pass the transcript to the parent component
-    onAudioCaptured(dummyText);
+  const processAudio = async (audioBlob: Blob) => {
+    try {
+      setIsProcessing(true);
+      
+      // Call the transcribeAudio function from our API
+      const transcribedText = await transcribeAudio(audioBlob);
+      
+      // Pass the transcript to the parent component
+      onAudioCaptured(transcribedText);
+      
+      toast({
+        title: "Audio transcribed",
+        description: "Your recording has been converted to text.",
+      });
+    } catch (error) {
+      console.error("Error transcribing audio:", error);
+      toast({
+        title: "Transcription failed",
+        description: "There was a problem processing your audio.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -104,34 +115,40 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
   };
 
   return (
-    <div className="flex flex-col items-center space-y-3">
-      <div className="flex items-center space-x-2">
+    <div className="flex flex-col items-center space-y-4 w-full">
+      <div className="flex flex-col items-center justify-center bg-gray-50 p-8 rounded-lg border border-gray-200 shadow-sm w-full">
         <Button
-          variant={isRecording ? "destructive" : "outline"}
+          variant={isRecording ? "destructive" : "default"}
           size="icon"
           onClick={isRecording ? stopRecording : startRecording}
-          disabled={isLoading}
-          className="h-16 w-16 rounded-full"
+          disabled={isLoading || isProcessing}
+          className="h-20 w-20 rounded-full mb-4"
         >
           {isRecording ? (
-            <MicOff className="h-6 w-6" />
+            <MicOff className="h-8 w-8" />
+          ) : isProcessing ? (
+            <Loader2 className="h-8 w-8 animate-spin" />
           ) : (
-            <Mic className="h-6 w-6" />
+            <Mic className="h-8 w-8" />
           )}
         </Button>
-      </div>
-      
-      {isRecording && (
-        <div className="flex items-center space-x-2 text-red-500 animate-pulse">
-          <AudioWaveform className="h-4 w-4" />
-          <span>{formatTime(recordingDuration)}</span>
+        
+        {isRecording ? (
+          <div className="flex items-center space-x-2 text-red-500 animate-pulse">
+            <AudioWaveform className="h-4 w-4" />
+            <span className="font-mono font-medium">{formatTime(recordingDuration)}</span>
+          </div>
+        ) : isProcessing ? (
+          <p className="text-sm text-blue-600">Converting speech to text...</p>
+        ) : null}
+        
+        <div className="text-sm text-gray-600 max-w-md text-center mt-4">
+          {isRecording 
+            ? "Click to stop recording" 
+            : isProcessing
+              ? "Please wait while we process your audio"
+              : "Click to start recording your meeting"}
         </div>
-      )}
-      
-      <div className="text-xs text-gray-500 max-w-md text-center mt-2">
-        {isRecording 
-          ? "Click to stop recording" 
-          : "Click to start recording your meeting"}
       </div>
     </div>
   );
