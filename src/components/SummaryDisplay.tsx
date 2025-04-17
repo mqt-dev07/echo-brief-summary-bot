@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import CopyButton from "./CopyButton";
 import ReactMarkdown from "react-markdown";
+import { Badge } from "@/components/ui/badge";
 
 interface SummaryDisplayProps {
   summary: string;
@@ -24,10 +25,17 @@ const SummaryDisplay = ({ summary, isLoading }: SummaryDisplayProps) => {
   return (
     <Card className="w-full h-full bg-white shadow-md">
       <CardHeader className="flex flex-row items-center justify-between py-4">
-        <CardTitle className="text-lg font-medium">Meeting Summary</CardTitle>
+        <div className="flex items-center">
+          <CardTitle className="text-lg font-medium">Meeting Summary</CardTitle>
+          {displayedSummary && (
+            <Badge variant="outline" className="ml-3 bg-green-50 text-green-700 border-green-200">
+              Generated
+            </Badge>
+          )}
+        </div>
         {displayedSummary && <CopyButton text={displayedSummary} />}
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 relative min-h-[400px]">
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="w-3/4 h-6 mb-2" />

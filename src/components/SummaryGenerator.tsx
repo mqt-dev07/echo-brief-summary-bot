@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { generateMeetingSummary } from "@/lib/summary-generator";
+import { generateSummary } from "@/lib/api";
 import SummaryDisplay from "./SummaryDisplay";
 import { PlayIcon, FileTextIcon } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PlaceholderText from "./PlaceholderText";
 
 const SummaryGenerator: React.FC = () => {
@@ -17,7 +16,7 @@ const SummaryGenerator: React.FC = () => {
   const { toast } = useToast();
   const placeholderText = PlaceholderText();
 
-  const handleGenerateSummary = () => {
+  const handleGenerateSummary = async () => {
     if (!transcript.trim()) {
       toast({
         title: "Empty transcript",
@@ -29,26 +28,23 @@ const SummaryGenerator: React.FC = () => {
 
     setIsLoading(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      try {
-        const generatedSummary = generateMeetingSummary(transcript);
-        setSummary(generatedSummary);
-        toast({
-          title: "Summary generated",
-          description: "Your meeting summary has been created successfully.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error generating summary",
-          description: "There was a problem generating your summary. Please try again.",
-          variant: "destructive",
-        });
-        console.error("Error generating summary:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 2000);
+    try {
+      const generatedSummary = await generateSummary(transcript);
+      setSummary(generatedSummary);
+      toast({
+        title: "Summary generated",
+        description: "Your meeting summary has been created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error generating summary",
+        description: "There was a problem generating your summary. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error generating summary:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLoadExample = () => {

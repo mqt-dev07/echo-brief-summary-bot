@@ -2,6 +2,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryGenerator from "@/components/SummaryGenerator";
+import { InfoCircle } from "@/components/InfoCircle";
 
 const Index: React.FC = () => {
   return (
@@ -15,6 +16,7 @@ const Index: React.FC = () => {
                 Transform meeting transcripts into professional summaries
               </p>
             </div>
+            <InfoCircle />
           </div>
         </div>
       </header>
