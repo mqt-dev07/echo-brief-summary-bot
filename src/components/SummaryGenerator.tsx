@@ -8,6 +8,8 @@ import { generateSummary } from "@/lib/api";
 import SummaryDisplay from "./SummaryDisplay";
 import { PlayIcon, FileTextIcon } from "lucide-react";
 import PlaceholderText from "./PlaceholderText";
+import AudioRecorder from "./AudioRecorder";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SummaryGenerator: React.FC = () => {
   const [transcript, setTranscript] = useState("");
@@ -50,6 +52,14 @@ const SummaryGenerator: React.FC = () => {
   const handleLoadExample = () => {
     setTranscript(placeholderText);
   };
+  
+  const handleAudioCaptured = (text: string) => {
+    setTranscript(text);
+    toast({
+      title: "Audio transcribed",
+      description: "You can now generate a summary from your recording.",
+    });
+  };
 
   return (
     <div className="container max-w-6xl mx-auto p-4">
@@ -71,13 +81,37 @@ const SummaryGenerator: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Textarea
-                placeholder="Paste your meeting transcript here..."
-                className="min-h-[400px] resize-none"
-                value={transcript}
-                onChange={(e) => setTranscript(e.target.value)}
-                disabled={isLoading}
-              />
+              <Tabs defaultValue="text" className="w-full mb-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="text">Text Input</TabsTrigger>
+                  <TabsTrigger value="audio">Audio Input</TabsTrigger>
+                </TabsList>
+                <TabsContent value="text" className="mt-4">
+                  <Textarea
+                    placeholder="Paste your meeting transcript here..."
+                    className="min-h-[350px] resize-none"
+                    value={transcript}
+                    onChange={(e) => setTranscript(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </TabsContent>
+                <TabsContent value="audio" className="mt-4">
+                  <div className="flex flex-col items-center justify-center min-h-[350px] border rounded-md p-6 bg-gray-50">
+                    <AudioRecorder 
+                      onAudioCaptured={handleAudioCaptured} 
+                      isLoading={isLoading} 
+                    />
+                    {transcript && (
+                      <div className="mt-6 w-full">
+                        <h3 className="text-sm font-medium mb-2">Transcription Preview:</h3>
+                        <div className="max-h-[150px] overflow-y-auto bg-white p-3 border rounded text-sm">
+                          {transcript}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
             <CardFooter>
               <Button
