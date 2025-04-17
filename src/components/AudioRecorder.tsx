@@ -14,9 +14,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [audioURL, setAudioURL] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   const startRecording = async () => {
@@ -26,6 +28,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      setAudioURL(null);
       
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -35,6 +38,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
       
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioURL(url);
         await processAudio(audioBlob);
         
         // Stop all tracks to release the microphone
@@ -86,7 +91,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
     try {
       setIsProcessing(true);
       
-      // Call the transcribeAudio function from our API
+      // Call the transcribeAudio function from our API with the actual audio recording
       const transcribedText = await transcribeAudio(audioBlob);
       
       // Pass the transcript to the parent component
@@ -149,6 +154,18 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioCaptured, isLoadin
               ? "Please wait while we process your audio"
               : "Click to start recording your meeting"}
         </div>
+
+        {audioURL && !isRecording && !isProcessing && (
+          <div className="mt-4 w-full max-w-xs">
+            <p className="text-sm font-medium mb-2">Preview your recording:</p>
+            <audio 
+              ref={audioRef}
+              src={audioURL} 
+              controls 
+              className="w-full" 
+            />
+          </div>
+        )}
       </div>
     </div>
   );

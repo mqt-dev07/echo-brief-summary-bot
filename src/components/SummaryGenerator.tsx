@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { useToast } from "@/components/ui/use-toast";
 import { generateSummary } from "@/lib/api";
 import SummaryDisplay from "./SummaryDisplay";
-import { PlayIcon, FileTextIcon } from "lucide-react";
+import { PlayIcon, FileTextIcon, InfoIcon } from "lucide-react";
 import PlaceholderText from "./PlaceholderText";
 import AudioRecorder from "./AudioRecorder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,7 +84,7 @@ const SummaryGenerator: React.FC = () => {
               <Tabs defaultValue="text" className="w-full mb-4">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="text">Text Input</TabsTrigger>
-                  <TabsTrigger value="audio">Audio Input</TabsTrigger>
+                  <TabsTrigger value="audio">Record Audio</TabsTrigger>
                 </TabsList>
                 <TabsContent value="text" className="mt-4">
                   <Textarea
@@ -103,7 +103,13 @@ const SummaryGenerator: React.FC = () => {
                     />
                     {transcript && (
                       <div className="mt-6 w-full">
-                        <h3 className="text-sm font-medium mb-2">Transcription Preview:</h3>
+                        <div className="flex items-center mb-2">
+                          <h3 className="text-sm font-medium">Transcription Result:</h3>
+                          <div className="ml-2 flex items-center text-xs text-gray-500">
+                            <InfoIcon className="h-3 w-3 mr-1" />
+                            <span>In production, this would use a real speech-to-text API</span>
+                          </div>
+                        </div>
                         <div className="max-h-[150px] overflow-y-auto bg-white p-3 border rounded text-sm">
                           {transcript}
                         </div>
